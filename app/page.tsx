@@ -3,6 +3,7 @@ import React from "react";
 
 export default function Home() {
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -494,9 +495,26 @@ export default function Home() {
     };
   }, []);
 
+  React.useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const tryPlay = async () => {
+      try {
+        await audio.play();
+      } catch {
+        // Autoplay có thể bị chặn, người dùng sẽ bấm nút play.
+      }
+    };
+
+    void tryPlay();
+  }, []);
+
   return (
-    <div className="scene flex min-h-screen items-center justify-center">
+    <div className="scene relative flex min-h-screen items-center justify-center">
       <canvas ref={canvasRef} className="canvas" />
+
+      <audio ref={audioRef} src="/christmas.mp3" loop autoPlay />
     </div>
   );
 }
