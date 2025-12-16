@@ -61,7 +61,7 @@ export default function Home() {
     resize();
     window.addEventListener("resize", resize);
 
-    const outlinePath = () => {
+    const outlinePath = (time: number) => {
       const { innerWidth: w, innerHeight: h } = window;
       const cx = w / 2;
       const top = h * 0.11;
@@ -75,19 +75,53 @@ export default function Home() {
         { y: h * 0.74, spread: 0.56 },
       ];
 
+      const branchBaseAmplitude = 16;
+
       ctx.beginPath();
+      const apexOffset =
+        Math.sin(time * config.swaySpeed) * branchBaseAmplitude * 0.35;
       ctx.moveTo(cx, top);
 
       tiers.forEach((t, idx) => {
-        const xL = cx - width * t.spread;
-        const xR = cx + width * t.spread;
+        const localAmp =
+          branchBaseAmplitude * (1 - idx / (tiers.length + 1));
+        const swayOffset =
+          Math.sin(time * config.swaySpeed + idx * 0.9) * localAmp;
+
+        const xL = cx - width * t.spread + swayOffset;
+        const xR = cx + width * t.spread + swayOffset;
         const lift = idx % 2 === 0 ? 28 : 18;
-        ctx.quadraticCurveTo(cx, t.y - lift, xL, t.y);
-        ctx.quadraticCurveTo(cx, t.y + lift, xR, t.y);
+        ctx.quadraticCurveTo(
+          cx + apexOffset * 0.6,
+          t.y - lift,
+          xL,
+          t.y
+        );
+        ctx.quadraticCurveTo(
+          cx + apexOffset * 0.4,
+          t.y + lift,
+          xR,
+          t.y
+        );
       });
 
-      ctx.quadraticCurveTo(cx, base - 10, cx + width * 0.2, base);
-      ctx.quadraticCurveTo(cx, base + 12, cx - width * 0.2, base);
+      const baseOffset =
+        Math.sin(time * config.swaySpeed + Math.PI / 3) *
+        branchBaseAmplitude *
+        0.3;
+
+      ctx.quadraticCurveTo(
+        cx + baseOffset,
+        base - 10,
+        cx + width * 0.2 + baseOffset,
+        base
+      );
+      ctx.quadraticCurveTo(
+        cx + baseOffset * 0.6,
+        base + 12,
+        cx - width * 0.2 + baseOffset,
+        base
+      );
       ctx.quadraticCurveTo(cx, base - 10, cx, base - 4);
       ctx.closePath();
     };
@@ -174,14 +208,6 @@ export default function Home() {
 
       // tree sway transform
       const cx = w / 2;
-      const pivotY = h * 0.45;
-      const sway = Math.sin(time * config.swaySpeed) * config.swayAmplitude;
-
-      ctx.save();
-      ctx.translate(cx, pivotY);
-      ctx.rotate(sway);
-      ctx.translate(-cx, -pivotY);
-
       // tree outline
       ctx.save();
       ctx.shadowColor = config.outlineGlow;
@@ -196,7 +222,7 @@ export default function Home() {
       } else {
         ctx.setLineDash([]);
       }
-      outlinePath();
+      outlinePath(time);
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.restore();
@@ -242,11 +268,8 @@ export default function Home() {
 
       // star
       ctx.save();
-      ctx.translate(0, 0); // already in sway transform
       drawStar(cx, h * 0.075, config.starSize);
       ctx.restore();
-
-      ctx.restore(); // end sway
 
       requestAnimationFrame(render);
     };
