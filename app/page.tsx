@@ -38,6 +38,11 @@ export default function Home() {
       starSize: 18,
       starColor: "#facc15",
       starGlow: "rgba(250, 204, 21, 0.75)",
+      sleighSpeed: 0.04,
+      sleighHeightRatio: 0.24,
+      sleighTrailLength: 260,
+      sleighColor: "#e5e7eb",
+      sleighGlow: "rgba(248,250,252,0.6)",
     };
 
     const snowflakes = Array.from({ length: config.snowCount }).map(() => ({
@@ -270,6 +275,213 @@ export default function Home() {
       ctx.save();
       drawStar(cx, h * 0.075, config.starSize);
       ctx.restore();
+
+      // sleigh & reindeers
+      const sleighT =
+        ((time - startTime) * 0.001 * config.sleighSpeed + 0.15) % 1.4 - 0.2;
+      if (sleighT > -0.2 && sleighT < 1.2) {
+        const baseY =
+          h * config.sleighHeightRatio +
+          Math.sin(time * 0.0012) * h * 0.01;
+        const xMain = w * sleighT;
+
+        const drawReindeer = (x: number, y: number, scale: number) => {
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.scale(scale, scale);
+
+          // body
+          ctx.lineWidth = 1.6;
+          ctx.strokeStyle = "rgba(248,250,252,0.95)";
+          ctx.fillStyle = "rgba(15,23,42,0.4)";
+
+          ctx.beginPath();
+          ctx.ellipse(0, -2, 11, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // neck & head
+          ctx.beginPath();
+          ctx.moveTo(4, -4);
+          ctx.quadraticCurveTo(10, -10, 12, -14);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(13.5, -15, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // nose glow
+          ctx.save();
+          ctx.fillStyle = "rgba(248,113,113,0.85)";
+          ctx.shadowColor = "rgba(248,113,113,0.9)";
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(15.2, -15, 1.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // antlers
+          ctx.beginPath();
+          ctx.moveTo(12, -18);
+          ctx.lineTo(10, -23);
+          ctx.moveTo(10, -21);
+          ctx.lineTo(7.5, -24);
+          ctx.moveTo(10.5, -22.5);
+          ctx.lineTo(12.5, -25);
+
+          ctx.moveTo(15, -18.2);
+          ctx.lineTo(17, -23);
+          ctx.moveTo(17, -21);
+          ctx.lineTo(19.5, -24);
+          ctx.moveTo(17.3, -22.8);
+          ctx.lineTo(15.8, -25);
+          ctx.stroke();
+
+          // legs
+          ctx.beginPath();
+          ctx.moveTo(-4, 2);
+          ctx.lineTo(-6, 8);
+          ctx.moveTo(-1, 3);
+          ctx.lineTo(-2, 9);
+          ctx.moveTo(3, 3);
+          ctx.lineTo(4, 9);
+          ctx.moveTo(7, 2);
+          ctx.lineTo(9, 8);
+          ctx.stroke();
+
+          // tail
+          ctx.beginPath();
+          ctx.moveTo(-10, -4);
+          ctx.quadraticCurveTo(-13, -7, -11, -1);
+          ctx.stroke();
+
+          // harness band
+          ctx.beginPath();
+          ctx.moveTo(-2, -4);
+          ctx.lineTo(7, -5);
+          ctx.stroke();
+
+          // small bell
+          ctx.save();
+          ctx.fillStyle = "rgba(250,204,21,0.9)";
+          ctx.beginPath();
+          ctx.arc(6, -3, 1.4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          ctx.restore();
+        };
+
+        ctx.save();
+        ctx.shadowColor = config.sleighGlow;
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = config.sleighColor;
+        ctx.fillStyle = "rgba(15,23,42,0.85)";
+        ctx.lineWidth = 2.2;
+
+        // sleigh body
+        const sleighY = baseY + Math.sin(time * 0.0015) * h * 0.006;
+        ctx.beginPath();
+        ctx.moveTo(xMain - 26, sleighY + 2);
+        ctx.quadraticCurveTo(
+          xMain - 16,
+          sleighY - 14,
+          xMain + 4,
+          sleighY - 12
+        );
+        ctx.quadraticCurveTo(
+          xMain + 20,
+          sleighY - 10,
+          xMain + 26,
+          sleighY + 4
+        );
+        ctx.quadraticCurveTo(
+          xMain + 10,
+          sleighY + 12,
+          xMain - 20,
+          sleighY + 10
+        );
+        ctx.closePath();
+        ctx.globalAlpha = 0.9;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+
+        // seat highlight
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(248,250,252,0.9)";
+        ctx.moveTo(xMain - 18, sleighY);
+        ctx.quadraticCurveTo(
+          xMain - 4,
+          sleighY - 6,
+          xMain + 14,
+          sleighY - 4
+        );
+        ctx.stroke();
+
+        // runners
+        ctx.beginPath();
+        ctx.moveTo(xMain - 20, sleighY + 9);
+        ctx.quadraticCurveTo(
+          xMain - 10,
+          sleighY + 14,
+          xMain,
+          sleighY + 11
+        );
+        ctx.quadraticCurveTo(
+          xMain + 10,
+          sleighY + 8,
+          xMain + 18,
+          sleighY + 10
+        );
+        ctx.stroke();
+
+        // rope to reindeers
+        ctx.beginPath();
+        ctx.moveTo(xMain + 20, sleighY - 4);
+        ctx.quadraticCurveTo(
+          xMain + 60,
+          sleighY - 14,
+          xMain + 98,
+          sleighY - 10
+        );
+        ctx.stroke();
+
+        ctx.restore();
+
+        // reindeers (3 heads)
+        const herdOffset =
+          Math.sin(time * 0.0016) * h * 0.004;
+        drawReindeer(xMain + 98, sleighY - 10 + herdOffset, 1.05);
+        drawReindeer(xMain + 122, sleighY - 12 + herdOffset * 1.3, 0.95);
+        drawReindeer(xMain + 146, sleighY - 14 + herdOffset * 1.6, 0.88);
+
+        // trailing light arc
+        ctx.save();
+        const trailStartX = xMain - config.sleighTrailLength * 0.6;
+        const trailEndX = xMain - 18;
+        const grad = ctx.createLinearGradient(
+          trailStartX,
+          sleighY - 26,
+          trailEndX,
+          sleighY - 16
+        );
+        grad.addColorStop(0, "rgba(56,189,248,0)");
+        grad.addColorStop(1, "rgba(248,250,252,0.7)");
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(trailStartX, sleighY - 18);
+        ctx.quadraticCurveTo(
+          (trailStartX + trailEndX) / 2,
+          sleighY - 38,
+          trailEndX,
+          sleighY - 20
+        );
+        ctx.stroke();
+        ctx.restore();
+      }
 
       requestAnimationFrame(render);
     };
